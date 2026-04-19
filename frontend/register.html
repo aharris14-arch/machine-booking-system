@@ -1,30 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Register</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register &middot; Machine Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h2>Register</h2>
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span>Machine Booking</span>
+  </div>
 
-  <input id="name" placeholder="Full Name">
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <h2>Create your account.</h2>
+  <p class="subtitle">Takes under a minute. You'll be booking the next wash right after.</p>
 
-  <select id="location">
-    <option value="">Select Location</option>
-    <option value="Units">Units</option>
-    <option value="Blocks">Blocks</option>
-  </select>
+  <div class="field-group">
+    <label for="name">Full name</label>
+    <input id="name" autocomplete="name" placeholder="Jordan Ibrahim">
+  </div>
 
-  <div id="message"></div>
+  <div class="field-group">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="email" placeholder="you@campus.edu">
+  </div>
 
-  <button onclick="register()">Register</button>
+  <div class="field-group">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="new-password" placeholder="Choose a password">
+  </div>
+
+  <div class="field-group">
+    <label for="location">Residence</label>
+    <select id="location">
+      <option value="">Select your residence</option>
+      <option value="Units">Units</option>
+      <option value="Blocks">Blocks</option>
+    </select>
+  </div>
+
+  <div id="message" aria-live="polite"></div>
+
+  <button class="primary" onclick="register()">Create account</button>
 
   <div class="link">
-    <a href="login.html">Already have an account?</a>
+    Already registered? <a href="login.html">Sign in instead</a>
   </div>
 </div>
 

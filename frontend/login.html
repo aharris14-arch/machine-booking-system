@@ -1,23 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login &middot; Machine Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h2>Login</h2>
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span>Machine Booking</span>
+  </div>
 
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <h2>Welcome back.</h2>
+  <p class="subtitle">Sign in to reserve a slot or check your schedule.</p>
 
-  <div id="message"></div>
+  <div class="field-group">
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="email" placeholder="you@campus.edu">
+  </div>
 
-  <button onclick="login()">Login</button>
+  <div class="field-group">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="Your password">
+  </div>
+
+  <div id="message" aria-live="polite"></div>
+
+  <button class="primary" onclick="login()">Sign in</button>
 
   <div class="link">
-    <a href="register.html">Create Account</a>
+    New here? <a href="register.html">Create an account</a>
   </div>
 </div>
 

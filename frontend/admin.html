@@ -1,7 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin &middot; Machine Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,33 +17,94 @@ if(!localStorage.getItem("token")){
 }
 </script>
 
-<div class="container">
-  <h2>Admin Panel</h2>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Machine Booking &middot; Admin</span>
+    </div>
+    <div class="nav">
+      <span class="crumb">Staff console</span>
+      <button class="ghost inline" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
-  <button onclick="logout()">Logout</button>
+  <div class="page-head">
+    <div>
+      <div class="hello">Operations</div>
+      <h2>Bookings &amp; usage at a glance.</h2>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="ghost inline" onclick="loadAll()">Reload bookings</button>
+      <button class="primary inline" onclick="loadAnalytics()">Refresh chart</button>
+    </div>
+  </div>
 
-  <h3>All Bookings</h3>
-  <button onclick="loadAll()">Load</button>
-  <div id="output"></div>
+  <div class="tiles">
+    <div class="tile accent">
+      <div class="k">Total bookings</div>
+      <div class="v" id="tile-total">&mdash;</div>
+    </div>
+    <div class="tile">
+      <div class="k">Active machines</div>
+      <div class="v">4</div>
+    </div>
+    <div class="tile">
+      <div class="k">Last sync</div>
+      <div class="v" id="tile-sync" style="font-size:22px;">&mdash;</div>
+    </div>
+  </div>
 
-  <h3>Analytics</h3>
-  <button onclick="loadAnalytics()">Load Analytics</button>
-  <canvas id="chart"></canvas>
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">All bookings</div>
+        <button class="ghost inline" onclick="loadAll()">Load</button>
+      </div>
+      <div id="output">
+        <div class="empty">Click <strong>Load</strong> to fetch the latest bookings.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Machine usage</div>
+        <button class="ghost inline" onclick="loadAnalytics()">Load analytics</button>
+      </div>
+      <canvas id="chart"></canvas>
+    </section>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="script.js"></script>
 
 <script>
+function stamp(){
+  var d = new Date();
+  var hh = String(d.getHours()).padStart(2,"0");
+  var mm = String(d.getMinutes()).padStart(2,"0");
+  document.getElementById("tile-sync").textContent = hh + ":" + mm;
+}
+
 function loadAll(){
   fetch(API+"/bookings/all",{
     headers:{Authorization:localStorage.getItem("token")}
   })
   .then(res=>res.json())
   .then(data=>{
+    document.getElementById("tile-total").textContent = data.length;
+    stamp();
+    if(!data.length){
+      output.innerHTML = '<div class="empty">No bookings on record yet.</div>';
+      return;
+    }
     output.innerHTML = data.map(b=>`
       <div class="card">
-        ${b.machine} - ${b.date} ${b.startTime}
+        <div>
+          <div style="font-weight:500;">${b.machine}</div>
+          <div style="color:var(--muted); font-size:12px; margin-top:2px;">${b.date} &middot; ${b.startTime}</div>
+        </div>
         <button onclick="deleteBooking('${b._id}')">Delete</button>
       </div>
     `).join("");
@@ -51,13 +117,26 @@ function loadAnalytics(){
   })
   .then(res=>res.json())
   .then(data=>{
+    stamp();
     new Chart(document.getElementById("chart"),{
       type:"bar",
       data:{
         labels:Object.keys(data.machineUsage),
         datasets:[{
-          data:Object.values(data.machineUsage)
+          label: "Bookings",
+          data:Object.values(data.machineUsage),
+          backgroundColor: "#1f3b4d",
+          borderRadius: 8,
+          borderSkipped: false,
+          maxBarThickness: 48
         }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: "#7a7269" } },
+          y: { beginAtZero: true, grid: { color: "#ebe5dc" }, ticks: { color: "#7a7269", precision: 0 } }
+        }
       }
     });
   });

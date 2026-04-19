@@ -1,7 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard &middot; Machine Booking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,34 +17,82 @@ if(!localStorage.getItem("token")){
 }
 </script>
 
-<div class="container">
-  <h2>Student Dashboard</h2>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Machine Booking</span>
+    </div>
+    <div class="nav">
+      <span class="crumb" id="loc-crumb">Resident</span>
+      <button class="ghost inline" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
-  <button onclick="logout()">Logout</button>
+  <div class="page-head">
+    <div>
+      <div class="hello">Your dashboard</div>
+      <h2>Book a slot, check your schedule.</h2>
+    </div>
+  </div>
 
-  <h3>Book Machine</h3>
+  <div class="grid-2">
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">New booking</div>
+      </div>
 
-  <select id="machine">
-    <option value="">Select Machine</option>
-    <option>Machine1</option>
-    <option>Machine2</option>
-    <option>Machine3</option>
-    <option>Machine4</option>
-  </select>
+      <div class="field-group">
+        <label for="machine">Machine</label>
+        <select id="machine">
+          <option value="">Select machine</option>
+          <option>Machine1</option>
+          <option>Machine2</option>
+          <option>Machine3</option>
+          <option>Machine4</option>
+        </select>
+      </div>
 
-  <input type="date" id="date">
-  <input type="time" id="startTime">
-  <input type="time" id="endTime">
+      <div class="field-group">
+        <label for="date">Date</label>
+        <input type="date" id="date">
+      </div>
 
-  <button onclick="book()">Book</button>
+      <div class="row-2">
+        <div class="field-group">
+          <label for="startTime">Start</label>
+          <input type="time" id="startTime">
+        </div>
+        <div class="field-group">
+          <label for="endTime">End</label>
+          <input type="time" id="endTime">
+        </div>
+      </div>
 
-  <div id="message"></div>
+      <div id="message" aria-live="polite"></div>
 
-  <h3>Your Schedule</h3>
-  <button onclick="loadBookings()">Refresh</button>
+      <button class="primary" onclick="book()">Reserve slot</button>
+    </section>
 
-  <div id="bookings"></div>
+    <section class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Your schedule</div>
+        <button class="ghost inline" onclick="loadBookings()">Refresh</button>
+      </div>
+
+      <div id="bookings">
+        <div class="empty">No bookings yet. Your reservations will appear here.</div>
+      </div>
+    </section>
+  </div>
 </div>
+
+<script>
+  try {
+    var loc = localStorage.getItem("location");
+    if (loc) document.getElementById("loc-crumb").textContent = loc;
+  } catch(e) {}
+</script>
 
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script src="script.js"></script>
