@@ -1,0 +1,18 @@
+<h2>Dashboard</h2>
+<button onclick="loadBookings()">View Schedule</button>
+<div id="bookings"></div>
+
+<script>
+function loadBookings(){
+  fetch(API+"/bookings",{
+    headers:{
+      "Authorization": localStorage.getItem("token")
+    }
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    document.getElementById("bookings").innerHTML =
+      data.map(b=> `<p>${b.machine} - ${b.date} ${b.startTime}</p>`).join("");
+  });
+}
+</script>
