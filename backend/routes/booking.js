@@ -1,69 +1,90 @@
 const router = require("express").Router();
 const Booking = require("../models/Booking");
 const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
 
-// CREATE BOOKING
+// CREATE
 router.post("/", auth, async(req,res)=>{
   const {machine,location,date,startTime,endTime} = req.body;
 
-  // ✅ Prevent past booking
-  if(new Date(date + " " + startTime) < new Date()){
-    return res.status(400).json({msg:"Cannot book past time"});
+  if(new Date(date+" "+startTime) < new Date()){
+    return res.status(400).json({msg:"Past time"});
   }
 
-  // ✅ Location restriction
   if(req.user.location !== location){
     return res.status(400).json({msg:"Wrong location"});
   }
 
-  // ✅ Machine restriction
-  const allowedMachines = location === "Units"
+  const allowed = location === "Units"
     ? ["Machine1","Machine2"]
     : ["Machine3","Machine4"];
 
-  if(!allowedMachines.includes(machine)){
+  if(!allowed.includes(machine)){
     return res.status(400).json({msg:"Invalid machine"});
   }
 
-  // ✅ Prevent double booking
   const exists = await Booking.findOne({machine,date,startTime});
   if(exists){
-    return res.status(400).json({msg:"Slot already booked"});
+    return res.status(400).json({msg:"Slot taken"});
   }
 
   const booking = new Booking({
-    userId: req.user.id,
-    machine,
-    location,
-    date,
-    startTime,
-    endTime
+    userId:req.user.id,
+    machine,location,date,startTime,endTime
   });
 
   await booking.save();
 
-  console.log("Notification: Booking confirmed");
+  req.app.get("io").emit("bookingUpdated");
 
   res.json({msg:"Booked"});
 });
 
-// GET BOOKINGS
+// GET USER BOOKINGS
 router.get("/", auth, async(req,res)=>{
-  const bookings = await Booking.find({location:req.user.location});
-  res.json(bookings);
+  const data = await Booking.find({location:req.user.location});
+  res.json(data);
 });
 
-// CANCEL BOOKING
+// ADMIN: GET ALL
+router.get("/all", auth, admin, async(req,res)=>{
+  const data = await Booking.find();
+  res.json(data);
+});
+
+// ANALYTICS
+router.get("/analytics", auth, admin, async(req,res)=>{
+  const bookings = await Booking.find();
+
+  const machineUsage = {};
+  const peakHours = {};
+
+  bookings.forEach(b=>{
+    machineUsage[b.machine] = (machineUsage[b.machine]||0)+1;
+    const hour = b.startTime.split(":")[0];
+    peakHours[hour] = (peakHours[hour]||0)+1;
+  });
+
+  res.json({
+    total: bookings.length,
+    machineUsage,
+    peakHours
+  });
+});
+
+// DELETE
 router.delete("/:id", auth, async(req,res)=>{
   const booking = await Booking.findById(req.params.id);
 
-  const bookingTime = new Date(booking.date + " " + booking.startTime);
-
-  if((bookingTime - new Date()) < 3600000){
-    return res.status(400).json({msg:"Cannot cancel within 1 hour"});
+  const time = new Date(booking.date+" "+booking.startTime);
+  if((time - new Date()) < 3600000){
+    return res.status(400).json({msg:"Too late to cancel"});
   }
 
   await booking.deleteOne();
+
+  req.app.get("io").emit("bookingUpdated");
+
   res.json({msg:"Cancelled"});
 });
 

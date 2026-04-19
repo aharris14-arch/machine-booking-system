@@ -1,18 +1,56 @@
-<h2>Dashboard</h2>
-<button onclick="loadBookings()">View Schedule</button>
-<div id="bookings"></div>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
 <script>
-function loadBookings(){
-  fetch(API+"/bookings",{
-    headers:{
-      "Authorization": localStorage.getItem("token")
-    }
-  })
-  .then(res=>res.json())
-  .then(data=>{
-    document.getElementById("bookings").innerHTML =
-      data.map(b=> `<p>${b.machine} - ${b.date} ${b.startTime}</p>`).join("");
-  });
+if(!localStorage.getItem("token")){
+  window.location = "login.html";
 }
 </script>
+
+<div class="container">
+  <h2>Student Dashboard</h2>
+
+  <button onclick="logout()">Logout</button>
+
+  <h3>Book Machine</h3>
+
+  <select id="machine">
+    <option value="">Select Machine</option>
+    <option>Machine1</option>
+    <option>Machine2</option>
+    <option>Machine3</option>
+    <option>Machine4</option>
+  </select>
+
+  <input type="date" id="date">
+  <input type="time" id="startTime">
+  <input type="time" id="endTime">
+
+  <button onclick="book()">Book</button>
+
+  <div id="message"></div>
+
+  <h3>Your Schedule</h3>
+  <button onclick="loadBookings()">Refresh</button>
+
+  <div id="bookings"></div>
+</div>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="script.js"></script>
+
+<script>
+const socket = io("https://machine-booking-system.onrender.com");
+
+socket.on("bookingUpdated", ()=>{
+  loadBookings();
+});
+</script>
+
+</body>
+</html>

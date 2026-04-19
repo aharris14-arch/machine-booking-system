@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<script>
+if(!localStorage.getItem("token")){
+  window.location = "login.html";
+}
+</script>
+
+<div class="container">
+  <h2>Admin Panel</h2>
+
+  <button onclick="logout()">Logout</button>
+
+  <h3>All Bookings</h3>
+  <button onclick="loadAll()">Load</button>
+  <div id="output"></div>
+
+  <h3>Analytics</h3>
+  <button onclick="loadAnalytics()">Load Analytics</button>
+  <canvas id="chart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+
+<script>
+function loadAll(){
+  fetch(API+"/bookings/all",{
+    headers:{Authorization:localStorage.getItem("token")}
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    output.innerHTML = data.map(b=>`
+      <div class="card">
+        ${b.machine} - ${b.date} ${b.startTime}
+        <button onclick="deleteBooking('${b._id}')">Delete</button>
+      </div>
+    `).join("");
+  });
+}
+
+function loadAnalytics(){
+  fetch(API+"/bookings/analytics",{
+    headers:{Authorization:localStorage.getItem("token")}
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    new Chart(document.getElementById("chart"),{
+      type:"bar",
+      data:{
+        labels:Object.keys(data.machineUsage),
+        datasets:[{
+          data:Object.values(data.machineUsage)
+        }]
+      }
+    });
+  });
+}
+</script>
+
+</body>
+</html>
