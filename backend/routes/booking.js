@@ -30,8 +30,8 @@ if (bookingTime <= now) {
     }
 
     // 🏠 MACHINE RULES (STRICT ENFORCEMENT)
-    const unitMachines = ["UnitMachine1", "Machine2"];
-    const blockMachines = ["Machine3", "Machine4"];
+    const unitMachines = ["Units 1", "Units 2"];
+    const blockMachines = ["Blocks 1", "Blocks 2"];
 
     let allowedMachines = [];
 
