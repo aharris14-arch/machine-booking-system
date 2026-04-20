@@ -45,7 +45,7 @@ function register(){
   })
   .catch(err=>{
     console.log(err);
-    msg.innerHTML = "<p class='error'>Server error</p>";
+    msg.innerHTML = "<p class='error'>Server error - check console</p>";
   });
 }
 
