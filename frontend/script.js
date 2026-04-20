@@ -84,8 +84,9 @@ function login(){
       msg.innerHTML = `<p class='error'>${data.msg}</p>`;
     }
   })
-  .catch(()=>{
-    msg.innerHTML = "<p class='error'>Server error</p>";
+  .catch(err=>{
+    console.log(err);
+    msg.innerHTML = "<p class='error'>Server error - check console</p>";
   });
 }
 
