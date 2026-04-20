@@ -20,7 +20,7 @@ router.post("/", auth, async (req, res) => {
 const bookingTime = new Date(date + "T" + startTime + ":00Z");
 const now = new Date();
 
-if (bookingTime <= now) {
+if (bookingTime < now) {
   return res.status(400).json({ msg: "Cannot book past time" });
 }
 
