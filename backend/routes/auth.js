@@ -3,18 +3,38 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-router.post("/register", async(req,res)=>{
-  const {name,email,password,location} = req.body;
+router.post("/register", async (req,res)=>{
+  try{
+    const { name, email, password, location } = req.body;
 
-  const exists = await User.findOne({email});
-  if(exists) return res.status(400).json({msg:"User exists"});
+    if(!name || !email || !password || !location){
+      return res.json({ msg: "All fields required" });
+    }
 
-  const hashed = await bcrypt.hash(password,10);
+    const existing = await User.findOne({ email });
+    if(existing){
+      return res.json({ msg: "User already exists" });
+    }
 
-  const user = new User({name,email,password:hashed,location});
-  await user.save();
+    // 🔐 HASH PASSWORD (THIS WAS MISSING)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-  res.json({msg:"Registered"});
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      location
+    });
+
+    await user.save();
+
+    res.json({ msg: "Registered" });
+
+  } catch(err){
+    console.log("REGISTER ERROR:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
 });
 
 router.post("/login", async(req,res)=>{
@@ -32,7 +52,11 @@ router.post("/login", async(req,res)=>{
     {expiresIn:"2h"}
   );
 
-  res.json({token,role:user.role});
+  res.json({
+  token,
+  role: user.role,
+  location: user.location
+  });
 });
 
 module.exports = router;
