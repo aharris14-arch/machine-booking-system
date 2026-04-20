@@ -17,10 +17,12 @@ router.post("/", auth, async (req, res) => {
     }
 
     // ❌ prevent past booking
-    const bookingTime = new Date(`${date} ${startTime}`);
-    if (bookingTime < new Date()) {
-      return res.status(400).json({ msg: "Cannot book past time" });
-    }
+const bookingTime = new Date(date + "T" + startTime + ":00Z");
+const now = new Date();
+
+if (bookingTime <= now) {
+  return res.status(400).json({ msg: "Cannot book past time" });
+}
 
     // 🔒 FORCE correct user location (security fix)
     if (location !== req.user.location) {
@@ -28,7 +30,7 @@ router.post("/", auth, async (req, res) => {
     }
 
     // 🏠 MACHINE RULES (STRICT ENFORCEMENT)
-    const unitMachines = ["Machine1", "Machine2"];
+    const unitMachines = ["UnitMachine1", "Machine2"];
     const blockMachines = ["Machine3", "Machine4"];
 
     let allowedMachines = [];

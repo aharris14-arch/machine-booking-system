@@ -3,144 +3,213 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin &middot; Machine Booking</title>
+  <title>Admin · Machine Booking</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
+
+  <script>
+    // AUTH CHECK
+    if(!localStorage.getItem("token")){
+      window.location = "login.html";
+    }
+  </script>
 </head>
+
 <body>
 
-<script>
-if(!localStorage.getItem("token")){
-  window.location = "login.html";
-}
-</script>
-
 <div class="app">
+
+  <!-- TOP BAR -->
   <header class="topbar">
     <div class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <span>Machine Booking &middot; Admin</span>
+      <span class="brand-mark"></span>
+      <span>Machine Booking · Admin</span>
     </div>
+
     <div class="nav">
-      <span class="crumb">Staff console</span>
+      <button class="ghost inline" onclick="loadAll()">Load Bookings</button>
+      <button class="ghost inline" onclick="loadAnalytics()">Analytics</button>
       <button class="ghost inline" onclick="logout()">Logout</button>
     </div>
   </header>
 
+  <!-- HEADER -->
   <div class="page-head">
     <div>
-      <div class="hello">Operations</div>
-      <h2>Bookings &amp; usage at a glance.</h2>
-    </div>
-    <div style="display:flex; gap:8px;">
-      <button class="ghost inline" onclick="loadAll()">Reload bookings</button>
-      <button class="primary inline" onclick="loadAnalytics()">Refresh chart</button>
+      <h2>Admin Dashboard</h2>
+      <p>Manage all machine bookings in real time</p>
     </div>
   </div>
 
+  <!-- STATS -->
   <div class="tiles">
-    <div class="tile accent">
+    <div class="tile">
       <div class="k">Total bookings</div>
-      <div class="v" id="tile-total">&mdash;</div>
+      <div class="v" id="totalBookings">0</div>
     </div>
+
     <div class="tile">
       <div class="k">Active machines</div>
       <div class="v">4</div>
     </div>
+
     <div class="tile">
-      <div class="k">Last sync</div>
-      <div class="v" id="tile-sync" style="font-size:22px;">&mdash;</div>
+      <div class="k">Last update</div>
+      <div class="v" id="lastUpdate">--:--</div>
     </div>
   </div>
 
+  <!-- GRID -->
   <div class="grid-2">
+
+    <!-- BOOKINGS -->
     <section class="panel">
       <div class="panel-head">
-        <div class="panel-title">All bookings</div>
-        <button class="ghost inline" onclick="loadAll()">Load</button>
+        <div class="panel-title">All Bookings</div>
+        <button class="ghost inline" onclick="loadAll()">Refresh</button>
       </div>
+
       <div id="output">
-        <div class="empty">Click <strong>Load</strong> to fetch the latest bookings.</div>
+        <p class="empty">Click "Load Bookings" to view data</p>
       </div>
     </section>
 
+    <!-- ANALYTICS -->
     <section class="panel">
       <div class="panel-head">
-        <div class="panel-title">Machine usage</div>
-        <button class="ghost inline" onclick="loadAnalytics()">Load analytics</button>
+        <div class="panel-title">Analytics</div>
+        <button class="ghost inline" onclick="loadAnalytics()">Refresh</button>
       </div>
+
       <canvas id="chart"></canvas>
     </section>
+
   </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="script.js"></script>
 
 <script>
-function stamp(){
-  var d = new Date();
-  var hh = String(d.getHours()).padStart(2,"0");
-  var mm = String(d.getMinutes()).padStart(2,"0");
-  document.getElementById("tile-sync").textContent = hh + ":" + mm;
+// =====================
+// CONFIG
+// =====================
+const API = "https://machine-booking-system.onrender.com/api";
+
+let chartInstance = null;
+
+
+// =====================
+// LOGOUT
+// =====================
+function logout(){
+  localStorage.clear();
+  window.location = "login.html";
 }
 
+
+// =====================
+// CLOCK UPDATE
+// =====================
+function updateTime(){
+  const now = new Date();
+  document.getElementById("lastUpdate").innerText =
+    now.getHours().toString().padStart(2,'0') + ":" +
+    now.getMinutes().toString().padStart(2,'0');
+}
+
+
+// =====================
+// LOAD BOOKINGS
+// =====================
 function loadAll(){
-  fetch(API+"/bookings/all",{
-    headers:{Authorization:localStorage.getItem("token")}
+
+  fetch(API + "/bookings/all",{
+    headers:{
+      "Authorization": localStorage.getItem("token")
+    }
   })
-  .then(res=>res.json())
-  .then(data=>{
-    document.getElementById("tile-total").textContent = data.length;
-    stamp();
+  .then(res => res.json())
+  .then(data => {
+
+    console.log("Bookings:", data);
+
+    document.getElementById("totalBookings").innerText = data.length;
+
+    const div = document.getElementById("output");
+
     if(!data.length){
-      output.innerHTML = '<div class="empty">No bookings on record yet.</div>';
+      div.innerHTML = "<p class='empty'>No bookings found</p>";
       return;
     }
-    output.innerHTML = data.map(b=>`
+
+    div.innerHTML = data.map(b => `
       <div class="card">
-        <div>
-          <div style="font-weight:500;">${b.machine}</div>
-          <div style="color:var(--muted); font-size:12px; margin-top:2px;">${b.date} &middot; ${b.startTime}</div>
-        </div>
-        <button onclick="deleteBooking('${b._id}')">Delete</button>
+        <b>${b.machine}</b><br>
+        <small>${b.location}</small><br>
+        ${b.date} | ${b.startTime} - ${b.endTime}
       </div>
     `).join("");
+
+    updateTime();
+
+  })
+  .catch(err=>{
+    console.log(err);
+    document.getElementById("output").innerHTML =
+      "<p class='error'>Failed to load bookings</p>";
   });
 }
 
+
+// =====================
+// ANALYTICS
+// =====================
 function loadAnalytics(){
-  fetch(API+"/bookings/analytics",{
-    headers:{Authorization:localStorage.getItem("token")}
+
+  fetch(API + "/bookings/analytics",{
+    headers:{
+      "Authorization": localStorage.getItem("token")
+    }
   })
-  .then(res=>res.json())
-  .then(data=>{
-    stamp();
-    new Chart(document.getElementById("chart"),{
+  .then(res => res.json())
+  .then(data => {
+
+    const ctx = document.getElementById("chart");
+
+    if(chartInstance){
+      chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx,{
       type:"bar",
       data:{
-        labels:Object.keys(data.machineUsage),
+        labels:Object.keys(data.machineUsage || {}),
         datasets:[{
-          label: "Bookings",
-          data:Object.values(data.machineUsage),
-          backgroundColor: "#1f3b4d",
-          borderRadius: 8,
-          borderSkipped: false,
-          maxBarThickness: 48
+          label:"Bookings",
+          data:Object.values(data.machineUsage || {})
         }]
-      },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false }, ticks: { color: "#7a7269" } },
-          y: { beginAtZero: true, grid: { color: "#ebe5dc" }, ticks: { color: "#7a7269", precision: 0 } }
-        }
       }
     });
+
+    updateTime();
+  })
+  .catch(err=>{
+    console.log(err);
   });
 }
+
+
+// =====================
+// AUTO LOAD ON OPEN
+// =====================
+loadAll();
+loadAnalytics();
+
 </script>
 
 </body>
