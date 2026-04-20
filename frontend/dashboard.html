@@ -58,15 +58,30 @@ if(!localStorage.getItem("token")){
         <input type="date" id="date">
       </div>
 
-      <div class="row-2">
-        <div class="field-group">
-          <label for="startTime">Start</label>
-          <input type="time" id="startTime">
-        </div>
-        <div class="field-group">
-          <label for="endTime">End</label>
-          <input type="time" id="endTime">
-        </div>
+      <div class="field-group">
+          <label>Time Slot (60 min)</label>
+          <select id="timeSlot">
+            <option value="">Select Slot</option>
+            <option value="05:00">5:00 AM - 6:00 AM</option>
+            <option value="06:00">6:00 AM - 7:00 AM</option>
+            <option value="07:00">7:00 AM - 8:00 AM</option>
+            <option value="08:00">08:00 AM - 09:00 AM</option>
+            <option value="09:00">09:00 AM - 10:00 AM</option>
+            <option value="10:00">10:00 AM - 11:00 AM</option>
+            <option value="11:00">11:00 AM - 12:00 PM</option>
+            <option value="12:00">12:00 PM - 01:00 PM</option>
+            <option value="13:00">01:00 PM - 02:00 PM</option>
+            <option value="14:00">02:00 PM - 03:00 PM</option>
+            <option value="15:00">03:00 PM - 04:00 PM</option>
+            <option value="16:00">04:00 PM - 05:00 PM</option>
+            <option value="17:00">05:00 PM - 06:00 PM</option>
+            <option value="18:00">06:00 PM - 07:00 PM</option>
+            <option value="19:00">07:00 PM - 08:00 PM</option>
+            <option value="20:00">08:00 PM - 09:00 PM</option>
+            <option value="21:00">09:00 PM - 10:00 PM</option>
+            <option value="22:00">10:00 PM - 11:00 PM</option>
+            <option value="23:00">11:00 PM - 12:00 AM</option>
+          </select>
       </div>
 
       <div id="message" aria-live="polite"></div>

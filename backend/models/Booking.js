@@ -5,8 +5,7 @@ const BookingSchema = new mongoose.Schema({
   machine: String,
   location: String,
   date: String,
-  startTime: String,
-  endTime: String
+  timeSlot: String,
 });
 
 module.exports = mongoose.model("Booking", BookingSchema);

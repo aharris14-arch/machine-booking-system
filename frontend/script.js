@@ -94,11 +94,10 @@ function book(){
 
   const machine = document.getElementById("machine").value;
   const date = document.getElementById("date").value;
-  const startTime = document.getElementById("startTime").value;
-  const endTime = document.getElementById("endTime").value;
+  const timeSlot = document.getElementById("timeSlot").value;
   const location = localStorage.getItem("location");
 
-  if(!machine || !date || !startTime || !endTime){
+  if(!machine || !date || !timeSlot){
     msg.innerHTML = "<p class='error'>Fill all fields</p>";
     return;
   }
@@ -112,8 +111,7 @@ function book(){
     body: JSON.stringify({
       machine,
       date,
-      startTime,
-      endTime,
+      timeSlot,
       location
     })
   })
@@ -148,7 +146,7 @@ function loadBookings(){
     bookingsDiv.innerHTML = data.map(b => `
       <div class="card">
         <strong>${b.machine}</strong><br>
-        ${b.date} | ${b.startTime} - ${b.endTime}<br>
+        ${b.date} | ${b.timeSlot}<br>
         <button onclick="cancelBooking('${b._id}')">Cancel</button>
       </div>
     `).join("");

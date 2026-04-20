@@ -9,15 +9,15 @@ const admin = require("../middleware/admin");
 // ======================
 router.post("/", auth, async (req, res) => {
   try {
-    const { machine, location, date, startTime, endTime } = req.body;
+    const { machine, location, date, timeSlot } = req.body;
 
     // ✅ validate inputs
-    if (!machine || !location || !date || !startTime || !endTime) {
+    if (!machine || !location || !date || !timeSlot) {
       return res.status(400).json({ msg: "All fields required" });
     }
 
     // ❌ prevent past booking
-const bookingTime = new Date(date + "T" + startTime + ":00Z");
+const bookingTime = new Date(date + "T" + timeSlot + ":00Z");
 const now = new Date();
 
 if (bookingTime < now) {
@@ -48,7 +48,7 @@ if (bookingTime < now) {
     }
 
     // ❌ prevent double booking
-    const exists = await Booking.findOne({ machine, date, startTime });
+    const exists = await Booking.findOne({ machine, date, timeSlot });
     if (exists) {
       return res.status(400).json({ msg: "Slot already taken" });
     }
@@ -58,8 +58,7 @@ if (bookingTime < now) {
       machine,
       location,
       date,
-      startTime,
-      endTime
+      timeSlot
     });
 
     await booking.save();
@@ -114,7 +113,7 @@ router.get("/analytics", auth, admin, async (req, res) => {
     bookings.forEach(b => {
       machineUsage[b.machine] = (machineUsage[b.machine] || 0) + 1;
 
-      const hour = b.startTime.split(":")[0];
+      const hour = b.timeSlot.split(":")[0];
       peakHours[hour] = (peakHours[hour] || 0) + 1;
     });
 
@@ -141,7 +140,7 @@ router.delete("/:id", auth, async (req, res) => {
       return res.status(404).json({ msg: "Booking not found" });
     }
 
-    const bookingTime = new Date(`${booking.date} ${booking.startTime}`);
+    const bookingTime = new Date(`${booking.date} ${booking.timeSlot}`);
 
     // ⏱ only allow cancel 1 hour before
     if ((bookingTime - new Date()) < 3600000) {
