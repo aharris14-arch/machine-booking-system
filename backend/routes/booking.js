@@ -61,11 +61,17 @@ if (bookingTime < now) {
       timeSlot
     });
 
-    await booking.save();
+await booking.save();
 
-    req.app.get("io").emit("bookingUpdated");
+// 🔔 realtime update
+req.app.get("io").emit("bookingUpdated");
 
-    res.json({ msg: "Booked" });
+// 📧 SEND EMAIL
+const user = await require("../models/User").findById(req.user.id);
+
+await sendBookingEmail(user.email, booking);
+
+res.json({ msg: "Booked" });
 
   } catch (err) {
     console.log(err);
@@ -158,5 +164,23 @@ router.delete("/:id", auth, async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 });
+
+// ======================
+// GET BOOKINGS BY DATE
+// ======================
+router.get("/date/:date", auth, async (req, res) => {
+  try {
+    const bookings = await Booking.find({
+      date: req.params.date,
+      location: req.user.location
+    });
+
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+const { sendBookingEmail } = require("../utils/email");
 
 module.exports = router;

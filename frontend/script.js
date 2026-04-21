@@ -171,7 +171,6 @@ function cancelBooking(id){
   });
 }
 
-
 // =====================
 // ADMIN DELETE
 // =====================
@@ -183,4 +182,97 @@ function deleteBooking(id){
     }
   })
   .then(()=> loadAll());
+}
+
+// ======================
+// ALL POSSIBLE TIME SLOTS
+// ======================
+const ALL_SLOTS = [
+  "05:00","06:00","07:00","08:00","09:00",
+  "10:00","11:00","12:00","13:00","14:00",
+  "15:00","16:00","17:00","18:00","19:00",
+  "20:00","21:00","22:00","23:00"
+];
+
+
+// ======================
+// LOAD AVAILABLE + TAKEN SLOTS
+// ======================
+function loadSlots(){
+  const date = document.getElementById("date").value;
+  const select = document.getElementById("timeSlot");
+
+  if(!date){
+    select.innerHTML = "<option>Select date first</option>";
+    return;
+  }
+
+  fetch(API + "/bookings/date/" + date,{
+    headers:{
+      "Authorization": localStorage.getItem("token")
+    }
+  })
+  .then(res => res.json())
+  .then(bookings => {
+
+    const takenSlots = bookings.map(b => b.timeSlot);
+
+    select.innerHTML = "<option value=''>Select Slot</option>";
+
+    ALL_SLOTS.forEach(slot => {
+
+      const isTaken = takenSlots.includes(slot);
+
+      select.innerHTML += `
+        <option value="${slot}" ${isTaken ? "disabled" : ""}>
+          ${slot} ${isTaken ? " (Taken)" : " (Available)"}
+        </option>
+      `;
+    });
+
+  })
+  .catch(err => {
+    console.log(err);
+  });
+}
+
+
+// ======================
+// AUTO LOAD WHEN DATE CHANGES
+// ======================
+document.getElementById("date").addEventListener("change", loadSlots);
+
+
+
+// ======================
+// REAL-TIME SOCKET CONNECTION
+// ======================
+const socket = io("https://machine-booking-system.onrender.com");
+
+socket.on("bookingUpdated", () => {
+  loadSlots();
+  loadBookings();
+  showNotification("Slots updated in real-time");
+});
+
+
+// ======================
+// NOTIFICATION FUNCTION
+// ======================
+function showNotification(msg){
+  const box = document.createElement("div");
+  box.innerText = msg;
+
+  box.style.position = "fixed";
+  box.style.top = "20px";
+  box.style.right = "20px";
+  box.style.background = "#1f3b4d";
+  box.style.color = "#fff";
+  box.style.padding = "12px 18px";
+  box.style.borderRadius = "8px";
+  box.style.zIndex = "9999";
+
+  document.body.appendChild(box);
+
+  setTimeout(() => box.remove(), 3000);
 }
